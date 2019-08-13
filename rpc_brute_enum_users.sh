@@ -2,19 +2,19 @@
 #
 # Description
 #
-# This script connects to a given server via RPC,
-# discovers it's SID and then enumerate the  machine / domain users via user SID bruteforce.
+# This script connects to a given server via RPC, discovers it's SID and then enumerate the  machine / domain users via user SID bruteforce.
 #
-# Obs. This script relies on 'rpcclient' binary. Make sure to install 'smbclient' package on you Linux distro.
+# This script relies on 'rpcclient' binary. Make sure to install 'smbclient' package on you Linux distro.
 #
-#                     *** Do NOT use this for illegal or malicious use ***                     
-#                By running this, YOU are using this program at YOUR OWN RISK.                 
+#                     *** Do NOT use this for illegal or malicious use ***                     #
+#                By running this, YOU are using this program at YOUR OWN RISK.                 #
 #            This software is provided "as is", WITHOUT ANY guarantees OR warranty.  
 #
+
 # Usage:
 # ./rpc_brute_enum_users.sh -s 192.168.0.15 -u user -p 'P@ssw0rd'
 #
-# Autor: sh11td0wn
+# Autor: sh11td0wn (Github)
 #
 
 MSG_HELP="
@@ -22,11 +22,16 @@ MSG_HELP="
 
  ./rpc_brute_enum_users.sh -s 192.168.0.15 -u user -p 'P@ssw0rd'
 
+ Options:
+ 
  -s, --server SERVER_IP		Specify server's IP address
  -u, --user USERNAME		Specify username
  -p, --password PASSWORD	Specify user's password
 
  * All of the above options are required
+
+ -d, --domain			Specify the server's domain (default: WORKGROUP)
+
 "
 
 MSG_INVALID_OPTION="
@@ -38,6 +43,9 @@ then
 	echo "$MSG_HELP"
 	exit 0
 fi
+
+# Default options
+DOMAIN="WORKGROUP"
 
 # Options handling
 while test -n "$1"
@@ -55,6 +63,10 @@ do
 			PASS=$2
 			shift
 		;;
+		-d | --domain)
+			DOMAIN=$2
+			shift
+		;;
 		*)
 			echo "$MSG_INVALID_OPTION"
 			exit 1
@@ -65,7 +77,7 @@ done
 
 
 
-DOMAIN_SID=$(rpcclient -U ${USER}%${PASS} ${SERVER_IP} -c "lookupnames administrator" | grep -v "password:" | cut -d" " -f 2 | cut -d"-" -f 1-7)
+DOMAIN_SID=$(rpcclient -U ${USER}%${PASS} ${SERVER_IP} -W ${DOMAIN} -c "lookupnames administrator" | grep -v "password:" | cut -d" " -f 2 | cut -d"-" -f 1-7)
 
 SIDS=""
 for num in $(seq 500 2000)
@@ -77,4 +89,4 @@ done
 #	SIDS="${SIDS} ${DOMAIN_SID}-${num}"
 #done
 
-rpcclient -U ${USER}%${PASS} ${SERVER_IP} -c "lookupsids ${SIDS}" | grep -v '*unknown*'
+rpcclient -U ${USER}%${PASS} ${SERVER_IP} -W ${DOMAIN} -c "lookupsids ${SIDS}" | grep -v '*unknown*'
