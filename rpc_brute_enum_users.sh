@@ -11,7 +11,7 @@
 # Usage:
 # ./rpc_brute_enum_users.sh -s 192.168.0.15 -u user -p 'P@ssw0rd'
 #
-# Autor: Daniel Zaia Manzano <sh11td0wn@gmail.com>
+# Autor: sh11td0wn
 #
 
 MSG_HELP="
