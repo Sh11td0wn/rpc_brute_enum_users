@@ -3,4 +3,8 @@ This script connects to a given server via RPC, discovers it's SID and then enum
 
 This script relies on 'rpcclient' binary. Make sure to install 'smbclient' package on you Linux distro.
 
-This piece of code is intended for educational purposes only. I'm not responsible for it's misuse.
+
+
+                     *** Do NOT use this for illegal or malicious use ***                     
+                By running this, YOU are using this program at YOUR OWN RISK.                 
+            This software is provided "as is", WITHOUT ANY guarantees OR warranty.  
