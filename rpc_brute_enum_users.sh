@@ -20,7 +20,7 @@
 
 # TODO
 #
-# Take interactive password input from user on empty "-p" option.
+# 
 #
 
 MSG_HELP="
