@@ -32,13 +32,19 @@ MSG_HELP="
  
  -s, --server SERVER_IP		Specify server's IP address
  -u, --user USERNAME		Specify username
- -p, --password PASSWORD	Specify user's password
+ 
 
  * All of the above options are required
 
+ -p, --password PASSWORD	Specify user's password
+  (If -p is ommited, the user's password will be asked interactively)
  -d, --domain			Specify the server's domain (default: WORKGROUP)
 
 "
+
+#Enter WORKGROUP\sched's password: 
+
+
 
 MSG_INVALID_OPTION="
  Invalid option!
@@ -52,6 +58,7 @@ fi
 
 # Default options
 DOMAIN="WORKGROUP"
+PASS_FROM_CMD=0
 
 # Options handling
 while test -n "$1"
@@ -67,6 +74,7 @@ do
 		;;
 		-p | --password)
 			PASS=$2
+			PASS_FROM_CMD=1
 			shift
 		;;
 		-d | --domain)
@@ -81,7 +89,15 @@ do
 	shift
 done
 
+# Flags handling
 
+if [ ${PASS_FROM_CMD} -eq 0 ]
+then
+	read -s -p "Enter ${DOMAIN}\\${USER} password: " PASS
+	echo
+fi
+
+# Main processing
 
 DOMAIN_SID=$(rpcclient -U ${USER}%${PASS} ${SERVER_IP} -W ${DOMAIN} -c "lookupnames administrator" | grep -v "password:" | cut -d" " -f 2 | cut -d"-" -f 1-7)
 
