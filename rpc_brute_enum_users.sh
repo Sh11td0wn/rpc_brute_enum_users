@@ -42,10 +42,6 @@ MSG_HELP="
 
 "
 
-#Enter WORKGROUP\sched's password: 
-
-
-
 MSG_INVALID_OPTION="
  Invalid option!
 "
