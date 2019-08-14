@@ -95,16 +95,15 @@ fi
 
 # Main processing
 
+# Workgroup / Domain SID discovery
 DOMAIN_SID=$(rpcclient -U ${USER}%${PASS} ${SERVER_IP} -W ${DOMAIN} -c "lookupnames administrator" | grep -v "password:" | cut -d" " -f 2 | cut -d"-" -f 1-7)
 
+# SID's list creation
 SIDS=""
 for num in $(seq 500 2000)
 do
 	SIDS="${SIDS} ${DOMAIN_SID}-${num}"
 done
-#for num in $(seq 1000 1100)
-#do
-#	SIDS="${SIDS} ${DOMAIN_SID}-${num}"
-#done
 
+# User's enumeration main command
 rpcclient -U ${USER}%${PASS} ${SERVER_IP} -W ${DOMAIN} -c "lookupsids ${SIDS}" | grep -v '*unknown*'
