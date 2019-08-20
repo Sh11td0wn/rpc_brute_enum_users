@@ -6,6 +6,7 @@
 # discover it's SID and then enumerate users, groups and machine IDs via SID bruteforce.
 #
 # This script relies on 'rpcclient' binary. Make sure to install 'smbclient' package on you Linux distro.
+# This script relies on 'openssl' binary. Make sure to install 'openssl' package on you Linux distro.
 #
 #                     *** Do NOT use this for illegal or malicious use ***                     #
 #                By running this, YOU are using this program at YOUR OWN RISK.                 #
@@ -15,7 +16,7 @@
 # Usage:
 # ./rpc_brute_enum_users.sh -s 192.168.0.15 -u user -p 'P@ssw0rd'
 #
-# Version: 1.1
+# Version: 1.2
 #
 # Autor: Sh11td0wn (Github)
 #
@@ -101,10 +102,13 @@ then
 	echo
 fi
 
+# Generate NT hash from password (Solves special chars trouble on calling rpcclient)
+PASS_NT_HASH=$(echo -n ${PASS} | iconv -t utf16le | openssl md4 | cut -d" " -f 2)
+
 # Main processing
 
 # Workgroup / Domain SID discovery
-DOMAIN_SID=$(rpcclient -U ${USER}%${PASS} ${SERVER_IP} -W ${DOMAIN} -c "lookupnames administrator" | grep -v "password:" | cut -d" " -f 2 | cut -d"-" -f 1-7)
+DOMAIN_SID=$(rpcclient -U ${USER}%${PASS_NT_HASH} --pw-nt-hash ${SERVER_IP} -W ${DOMAIN} -c "lookupnames administrator" | grep -v "password:" | cut -d" " -f 2 | cut -d"-" -f 1-7)
 
 # SID's list creation
 SIDS=""
@@ -114,7 +118,7 @@ do
 done
 
 # User's enumeration main command
-RESULT="rpcclient -U ${USER}%${PASS} ${SERVER_IP} -W ${DOMAIN} -c 'lookupsids ${SIDS}' | grep -v '*unknown*' | grep -v '00000'"
+RESULT="rpcclient -U ${USER}%${PASS_NT_HASH} --pw-nt-hash ${SERVER_IP} -W ${DOMAIN} -c 'lookupsids ${SIDS}' | grep -v '*unknown*' | grep -v '00000'"
 
 # Validation of --only-users option
 if [ ${ONLY_USERS} -eq 1 ]
