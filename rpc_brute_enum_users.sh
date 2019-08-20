@@ -16,7 +16,7 @@
 # Usage:
 # ./rpc_brute_enum_users.sh -s 192.168.0.15 -u user -p 'P@ssw0rd'
 #
-# Version: 1.2
+# Version: 1.3
 #
 # Autor: Sh11td0wn (Github)
 #
@@ -35,8 +35,8 @@ MSG_HELP="
  
  -s, --server SERVER_IP		Specify server's IP address [REQUIRED]
  -u, --user USERNAME		Specify username 	    [REQUIRED]
+ -p, --password PASSWORD	Specify user's password     [REQUIRED]
 
- -p, --password PASSWORD	Specify user's password (If ommited, the user's password will be asked interactively)
  -d, --domain			Specify server's domain (default: WORKGROUP)
  -o, --only-users		Display only accounts usernames. Useful for creating user wordlists.
 "
@@ -50,8 +50,8 @@ fi
 # Default options
 SERVER_IP=0
 USER=0
+PASS=0
 DOMAIN="WORKGROUP"
-PASS_FROM_CMD=0
 ONLY_USERS=0
 
 # Options handling
@@ -89,17 +89,10 @@ done
 # Flags handling
 
 # Validation of required options
-if [ ${SERVER_IP} == 0 ] || [ ${USER} == 0 ]
+if [ ${SERVER_IP} == 0 ] || [ ${USER} == 0 ] || [ ${PASS} == 0 ]
 then
-	echo "Options --server and --user are required!"
+	echo "Options --server , --user and --pass are required!"
 	exit 1
-fi
-
-# Check if password was provided on command line. If not, script asks interactively.
-if [ ${PASS_FROM_CMD} -eq 0 ]
-then
-	read -s -p "Enter ${DOMAIN}\\${USER} password: " PASS
-	echo
 fi
 
 # Generate NT hash from password (Solves special chars trouble on calling rpcclient)
