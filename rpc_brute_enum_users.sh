@@ -3,7 +3,7 @@
 # Description
 #
 # This script connects to a given server via RPC,
-# discovers it's SID and then enumerate the  machine / domain users via user SID bruteforce.
+# discover it's SID and then enumerate users, groups and machine IDs via SID bruteforce.
 #
 # This script relies on 'rpcclient' binary. Make sure to install 'smbclient' package on you Linux distro.
 #
@@ -15,46 +15,43 @@
 # Usage:
 # ./rpc_brute_enum_users.sh -s 192.168.0.15 -u user -p 'P@ssw0rd'
 #
-# Autor: sh11td0wn (Github)
+# Version: 1.1
 #
-
-# TODO
-#
-# 
+# Autor: Sh11td0wn (Github)
 #
 
 MSG_HELP="
+ Description:
+
+ This script connects to a given server via RPC,
+ discover it's SID and then enumerate users, groups and machine IDs via SID bruteforce.
+
  Usage:
 
  ./rpc_brute_enum_users.sh -s 192.168.0.15 -u user -p 'P@ssw0rd'
 
  Options:
  
- -s, --server SERVER_IP		Specify server's IP address
- -u, --user USERNAME		Specify username
- 
+ -s, --server SERVER_IP		Specify server's IP address [REQUIRED]
+ -u, --user USERNAME		Specify username 	    [REQUIRED]
 
- * All of the above options are required
-
- -p, --password PASSWORD	Specify user's password
-  (If -p is ommited, the user's password will be asked interactively)
- -d, --domain			Specify the server's domain (default: WORKGROUP)
-
+ -p, --password PASSWORD	Specify user's password (If ommited, the user's password will be asked interactively)
+ -d, --domain			Specify server's domain (default: WORKGROUP)
+ -o, --only-users		Display only accounts usernames. Useful for creating user wordlists.
 "
 
-MSG_INVALID_OPTION="
- Invalid option!
-"
-
-if [ $1 -z ]
+if [ "$*" == "" ]
 then
 	echo "$MSG_HELP"
 	exit 0
 fi
 
 # Default options
+SERVER_IP=0
+USER=0
 DOMAIN="WORKGROUP"
 PASS_FROM_CMD=0
+ONLY_USERS=0
 
 # Options handling
 while test -n "$1"
@@ -77,8 +74,11 @@ do
 			DOMAIN=$2
 			shift
 		;;
+		-o | --only-users)
+			ONLY_USERS=1
+		;;
 		*)
-			echo "$MSG_INVALID_OPTION"
+			echo "Invalid option: $1"
 			exit 1
 		;;
 	esac
@@ -87,6 +87,14 @@ done
 
 # Flags handling
 
+# Validation of required options
+if [ ${SERVER_IP} == 0 ] || [ ${USER} == 0 ]
+then
+	echo "Options --server and --user are required!"
+	exit 1
+fi
+
+# Check if password was provided on command line. If not, script asks interactively.
 if [ ${PASS_FROM_CMD} -eq 0 ]
 then
 	read -s -p "Enter ${DOMAIN}\\${USER} password: " PASS
@@ -106,4 +114,12 @@ do
 done
 
 # User's enumeration main command
-rpcclient -U ${USER}%${PASS} ${SERVER_IP} -W ${DOMAIN} -c "lookupsids ${SIDS}" | grep -v '*unknown*'
+RESULT="rpcclient -U ${USER}%${PASS} ${SERVER_IP} -W ${DOMAIN} -c 'lookupsids ${SIDS}' | grep -v '*unknown*' | grep -v '00000'"
+
+# Validation of --only-users option
+if [ ${ONLY_USERS} -eq 1 ]
+then
+	RESULT="${RESULT} | grep '(1)' | grep -v '\\$' | cut -d'\' -f2 | cut -d' ' -f 1 "
+fi
+
+bash -c "${RESULT}"
