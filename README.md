@@ -15,7 +15,7 @@ This script connects to a given server via RPC, discovers it's SID and then enum
  
     -s, --server SERVER_IP		Specify server's IP address [REQUIRED]
     -u, --user USERNAME		Specify username 	    [REQUIRED]
-    -p, --password PASSWORD	Specify user's password     [REQUIRED]
+    -p, --password PASSWORD         Specify user's password     [REQUIRED]
 
     -d, --domain			Specify server's domain (default: WORKGROUP)
     -o, --only-users		Display only accounts usernames. Useful for creating user wordlists.
